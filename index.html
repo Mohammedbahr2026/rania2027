@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الصورة التفاعلية السحرية للمهارات الحياتية للأبطال</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Kids (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #fdf2f8 0%, #e0f2fe 50%, #fef9c3 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        /* Hotspot pulse animation */
+        @keyframes pulse-hotspot {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7); }
+            70% { transform: scale(1.12); box-shadow: 0 0 0 15px rgba(236, 72, 153, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+        }
+        .hotspot {
+            animation: pulse-hotspot 2s infinite ease-in-out;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .hotspot:hover {
+            transform: scale(1.25) !important;
+        }
+        /* Scene board styling */
+        .scene-container {
+            position: relative;
+            background: linear-gradient(to bottom, #bae6fd 0%, #fbcfe8 100%);
+            border-radius: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-between p-4 min-h-screen">
+
+    <!-- LOGIN SCREEN OVERLAY -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl p-6 sm:p-10 max-w-md w-full text-center shadow-2xl border-8 border-pink-400 transform scale-100 transition-all">
+            <div class="text-6xl mb-3 animate-bounce">🏰</div>
+            <h2 class="text-2xl sm:text-3xl font-black text-pink-600 mb-2">أهلاً بك يا بطل المهارات!</h2>
+            <p class="text-gray-600 font-bold text-sm sm:text-base mb-6">سجل معلوماتك لنبدأ مغامرة الغرفة السحرية معاً:</p>
+            
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4 text-right">
+                <div>
+                    <label class="block text-pink-700 font-black text-sm mb-1">👤 اسم البطل (الطالب):</label>
+                    <input type="text" id="studentName" required placeholder="مثال: أحمد محمد" class="w-full px-4 py-3 bg-pink-50 border-2 border-pink-200 rounded-2xl font-bold text-gray-800 focus:outline-none focus:border-pink-500">
+                </div>
+
+                <div>
+                    <label class="block text-pink-700 font-black text-sm mb-1">🏫 الصف الدراسي:</label>
+                    <select id="studentGrade" class="w-full px-4 py-3 bg-pink-50 border-2 border-pink-200 rounded-2xl font-bold text-gray-800 focus:outline-none focus:border-pink-500">
+                        <option value="روضة أولى (KG1)">روضة أولى (KG1)</option>
+                        <option value="روضة ثانية (KG2)" selected>روضة ثانية (KG2)</option>
+                        <option value="تمهيدي">تمهيدي</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-pink-700 font-black text-sm mb-1">👥 رقم المجموعة:</label>
+                    <select id="studentGroup" class="w-full px-4 py-3 bg-pink-50 border-2 border-pink-200 rounded-2xl font-bold text-gray-800 focus:outline-none focus:border-pink-500">
+                        <option value="المجموعة 1 (الأبطال)">المجموعة 1 (الأبطال)</option>
+                        <option value="المجموعة 2 (النجوم)">المجموعة 2 (النجوم)</option>
+                        <option value="المجموعة 3 (الزهور)">المجموعة 3 (الزهور)</option>
+                        <option value="المجموعة 4 (الورود)">المجموعة 4 (الورود)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full mt-2 py-3.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-black text-lg rounded-2xl shadow-lg transform active:scale-95 transition border-2 border-white">
+                    🚀 ابدأ المغامرة السحرية!
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="text-center my-2">
+        <h1 class="text-3xl sm:text-4xl font-black text-pink-600 drop-shadow-md">🗺️ الصورة السحرية لاكتشاف المهارات الحياتية</h1>
+        <div id="studentBadge" class="mt-2 inline-block bg-white px-5 py-1.5 rounded-full shadow-lg border-2 border-pink-400 text-pink-700 font-black text-sm sm:text-base hidden">
+            ⭐ البطل: <span id="displayName" class="text-pink-600"></span> | الصف: <span id="displayGrade" class="text-purple-600"></span> | المجموعة: <span id="displayGroup" class="text-amber-600"></span>
+        </div>
+        <p class="text-gray-700 font-bold text-sm sm:text-base mt-1">اضغط على النقاط الملونة في الغرفة لتعلم السر ثم أجب عن أسئلة التحدي!</p>
+        <div class="mt-2 inline-block bg-white px-5 py-1.5 rounded-full shadow-lg border-2 border-pink-400 text-pink-600 font-black text-base">
+            ✨ النقاط المكتشفة: <span id="discoveredCount">0</span> / <span id="totalHotspots">6</span>
+        </div>
+    </header>
+
+    <main class="flex flex-col items-center justify-center my-auto w-full max-w-4xl px-2">
+        <!-- Interactive Scene Container representing a children's room/kindergarten -->
+        <div class="scene-container w-full h-[380px] sm:h-[480px] border-8 border-white relative flex items-center justify-center">
+            
+            <!-- Room Background Elements (CSS / Emojis Art) -->
+            <div class="absolute inset-0 flex items-center justify-center opacity-15 pointer-events-none select-none text-9xl">
+                🏰🧸🧼🍎
+            </div>
+
+            <div class="absolute top-4 left-6 text-sm sm:text-base font-black bg-white/80 px-4 py-2 rounded-2xl shadow border border-pink-200 text-pink-700">
+                🏫 غرفة الأبطال الصغار التفاعلية
+            </div>
+
+            <!-- HOTSPOT 1: Hygiene (Bathroom Corner) -->
+            <button onclick="openSkillInfo(0)" class="hotspot absolute top-[30%] left-[20%] w-12 h-12 sm:w-16 sm:h-16 bg-pink-500 hover:bg-pink-600 text-white rounded-full flex items-center justify-center text-2xl sm:text-3xl shadow-xl border-4 border-white cursor-pointer z-20" title="النظافة الشخصية">
+                🧼
+            </button>
+
+            <!-- HOTSPOT 2: Cleaning Toys (Toy Shelf) -->
+            <button onclick="openSkillInfo(1)" class="hotspot absolute top-[45%] right-[25%] w-12 h-12 sm:w-16 sm:h-16 bg-amber-500 hover:bg-amber-600 text-white rounded-full flex items-center justify-center text-2xl sm:text-3xl shadow-xl border-4 border-white cursor-pointer z-20" title="ترتيب الألعاب">
+                🧸
+            </button>
+
+            <!-- HOTSPOT 3: Healthy Food (Kitchen / Snack Table) -->
+            <button onclick="openSkillInfo(2)" class="hotspot absolute bottom-[25%] left-[30%] w-12 h-12 sm:w-16 sm:h-16 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full flex items-center justify-center text-2xl sm:text-3xl shadow-xl border-4 border-white cursor-pointer z-20" title="الغذاء الصحي">
+                🍎
+            </button>
+
+            <!-- HOTSPOT 4: Helping Friends (Playground / Heart Corner) -->
+            <button onclick="openSkillInfo(3)" class="hotspot absolute top-[25%] right-[45%] w-12 h-12 sm:w-16 sm:h-16 bg-purple-500 hover:bg-purple-600 text-white rounded-full flex items-center justify-center text-2xl sm:text-3xl shadow-xl border-4 border-white cursor-pointer z-20" title="التعاطف ومساعدة الأصدقاء">
+                ❤️
+            </button>
+
+            <!-- HOTSPOT 5: Good Manners (Magic Words Board) -->
+            <button onclick="openSkillInfo(4)" class="hotspot absolute bottom-[30%] right-[15%] w-12 h-12 sm:w-16 sm:h-16 bg-sky-500 hover:bg-sky-600 text-white rounded-full flex items-center justify-center text-2xl sm:text-3xl shadow-xl border-4 border-white cursor-pointer z-20" title="آداب الكلام والتحية">
+                💬
+            </button>
+
+            <!-- HOTSPOT 6: Listening (Story Corner) -->
+            <button onclick="openSkillInfo(5)" class="hotspot absolute bottom-[20%] left-[15%] w-12 h-12 sm:w-16 sm:h-16 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center text-2xl sm:text-3xl shadow-xl border-4 border-white cursor-pointer z-20" title="الاستماع والإنصات">
+                👂
+            </button>
+
+        </div>
+
+        <div class="mt-4 flex gap-4">
+            <button onclick="resetScene()" class="px-6 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-black text-base sm:text-lg rounded-full shadow-lg transform active:scale-95 transition border-2 border-white">
+                🔄 إعادة استكشاف الغرفة
+            </button>
+            <button onclick="logoutStudent()" class="px-6 py-2.5 bg-gray-500 hover:bg-gray-600 text-white font-black text-base sm:text-lg rounded-full shadow-lg transform active:scale-95 transition border-2 border-white">
+                👤 تغيير بيانات البطل
+            </button>
+        </div>
+    </main>
+
+    <!-- STEP 1: INFO MODAL (Displays rich information first) -->
+    <main>
+    <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full text-center shadow-2xl border-8 border-pink-300 transform scale-100 transition-all">
+            <div id="modalEmoji" class="text-6xl mb-3 animate-bounce">🌟</div>
+            <h3 id="modalTitle" class="text-xl sm:text-2xl font-black text-pink-600 mb-2">عنوان المهارة</h3>
+            
+            <div class="bg-pink-50 p-4 rounded-2xl border border-pink-200 mb-4 text-right">
+                <h4 class="font-black text-pink-900 text-sm sm:text-base mb-1">💡 السر الأثري للبطل:</h4>
+                <p id="modalDescription" class="text-gray-800 text-sm sm:text-base font-bold leading-relaxed">شرح تفصيلي هنا...</p>
+            </div>
+
+            <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 mb-5 text-right flex items-center gap-3">
+                <span class="text-3xl">⭐</span>
+                <div>
+                    <h5 class="font-black text-amber-900 text-xs sm:text-sm">تحدي البطل الصغير:</h5>
+                    <p id="modalChallenge" class="text-amber-800 text-xs sm:text-sm font-bold">تطبيق عملي بسيط...</p>
+                </div>
+            </div>
+
+            <button onclick="startSkillQuiz()" class="px-8 py-3 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-black text-lg rounded-2xl shadow-md transition w-full">
+                ✨ فهمت السر، ابدأ أسئلة التحدي! ➔
+            </button>
+        </div>
+    </div>
+    </main>
+
+    <!-- STEP 2: QUIZ MODAL (Displays at least 3 interactive questions after reading info) -->
+    <main>
+    <div id="quizModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full text-center shadow-2xl border-8 border-purple-400 transform scale-100 transition-all">
+            <div class="flex justify-between items-center mb-2">
+                <span id="quizEmoji" class="text-4xl">🎯</span>
+                <span id="questionCounter" class="bg-purple-100 text-purple-800 font-black px-3 py-1 rounded-full text-xs">السؤال 1 من 3</span>
+            </div>
+            
+            <h3 id="quizSkillTitle" class="text-lg font-black text-purple-600 mb-1">عنوان المهارة</h3>
+            <p id="quizQuestionText" class="text-gray-800 text-base sm:text-lg font-bold mb-4 leading-relaxed bg-purple-50 p-3.5 rounded-2xl border border-purple-200 text-right">سؤال التحدي هنا...</p>
+            
+            <!-- 4 Choices container -->
+            <div id="quizChoicesContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <!-- Dynamically populated buttons -->
+            </div>
+
+            <!-- Feedback message -->
+            <div id="quizFeedback" class="text-base font-black hidden mb-3"></div>
+
+            <button id="nextQuestionBtn" onclick="nextQuestion()" class="px-8 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg rounded-2xl shadow-md transition hidden w-full">
+                السؤال التالي ➔
+            </button>
+        </div>
+    </div>
+    </main>
+
+    <footer class="text-center text-xs text-gray-600 font-bold py-2">
+        أنشطة تفاعلية ذكية لطفل الروضة © 2026
+    </footer>
+
+    <script>
+        // Web Audio API Synthesizer for magical chime and correct/incorrect feedback
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playMagicalSound() {
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+                const now = audioCtx.currentTime;
+                const frequencies = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+                frequencies.forEach((freq, index) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + index * 0.08);
+                    gain.gain.setValueAtTime(0.15, now + index * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.08 + 0.25);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + index * 0.08);
+                    osc.stop(now + index * 0.08 + 0.25);
+                });
+            } catch (e) {
+                console.log("Audio not supported");
+            }
+        }
+
+        function playCorrectSound() {
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+                const now = audioCtx.currentTime;
+                const frequencies = [523.25, 659.25, 783.99, 1046.50];
+                frequencies.forEach((freq, index) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + index * 0.1);
+                    gain.gain.setValueAtTime(0.2, now + index * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.1 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + index * 0.1);
+                    osc.stop(now + index * 0.1 + 0.3);
+                });
+            } catch (e) { console.log("Audio not supported"); }
+        }
+
+        function playIncorrectSound() {
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(150, now + 0.25);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } catch (e) { console.log("Audio not supported"); }
+        }
+
+        // Handle Student Login
+        function handleLogin(event) {
+            event.preventDefault();
+            playMagicalSound();
+
+            const name = document.getElementById('studentName').value.trim();
+            const grade = document.getElementById('studentGrade').value;
+            const group = document.getElementById('studentGroup').value;
+
+            if (!name) return;
+
+            document.getElementById('displayName').innerText = name;
+            document.getElementById('displayGrade').innerText = grade;
+            document.getElementById('displayGroup').innerText = group;
+
+            document.getElementById('studentBadge').classList.remove('hidden');
+            document.getElementById('loginModal').classList.add('hidden');
+        }
+
+        function logoutStudent() {
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('studentBadge').classList.add('hidden');
+        }
+
+        // Data for interactive hotspots / skills with at least 3 questions each
+        const skillsData = [
+            {
+                id: 0,
+                title: "سر النظافة الشخصية (ركن الحمام)",
+                emoji: "🧼",
+                description: "غسل اليدين بالماء والصابون لمدة 20 ثانية يحارب الجراثيم غير المريية التي لا نراها بعيوننا، ليحافظ على بطننا سليماً وجسمنا نشيطاً طوال اليوم!",
+                challenge: "اذهب واغسل يديك الآن واصنع رغوة صابون بيضاء مثل السحاب!",
+                questions: [
+                    {
+                        question: "متى يجب علينا غسل أيدينا بالماء والصابون؟",
+                        choices: ["قبل تناول الطعام وبعده", "قبل النوم فقط", "عندما تكون نظيفة جداً", "لا داعي لغسل اليدين"],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "لماذا نستخدم الصابون مع الماء عند غسل اليديـن؟",
+                        choices: ["لكن لرائحتها الجميلة فقط", "لقتل الجراثيم غير المرة", "لتلوين الماء باللون الأبيض", "لأن اللعب بالصابون ممتع"],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "ما هي المدة التقريبية لغسل اليدين جيداً بالماء والصابون؟",
+                        choices: ["ثانية واحدة", "20 ثانية كاملة", "ساعة كاملة", "عشر دقائق"],
+                        correctIndex: 1
+                    }
+                ]
+            },
+            {
+                id: 1,
+                title: "سر ترتيب الألعاب (رف الألعاب)",
+                emoji: "🧸",
+                description: "الألعاب تحب العودة إلى بيوتها المخصصة على الرفوف بعد الانتهاء من اللعب لكي نجدها بسرعة في المرة القادمة ولا يتعثر بها أحد أفراد العائلة أو الأصدقاء.",
+                challenge: "قم بجمع لعبتين قريبتين منك الآن وضعهما في مكانهما الصحيح!",
+                questions: [
+                    {
+                        question: "ماذا يفعل البطل الشجاع بعد الانتهاء من اللعب بألعابه؟",
+                        choices: ["يتركها على الأرض ليتعثر بها الآخرون", "يعيدها إلى مكانها المخصص مرتبة", "يرميها في سلة المهملات", "يخفيها تحت السرير"],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "لماذا نضع الألعاب في مكانها الصحيح؟",
+                        choices: ["لكي لا تضيع ونجدها بسهولة دائماً", "لكي تبكي الألعاب بعيدة عنا", "لكي لا نلعب بها مرة أخرى", "لإزعاج المعلمة"],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "إذا وجدت لعبة لصديقك على الأرض، ماذا تفعل؟",
+                        choices: ["أقوم برفسها بقدمي", "أتركها وأمشي", "أعيدها لصديقي أو أضعها على الرف", "أخفيها في حقيبتي"],
+                        correctIndex: 2
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "سر الغذاء الصحي (طاولة الوجبات)",
+                emoji: "🍎",
+                description: "الفواكه والخضروات الطازجة مثل التفاح والجزر تعمل كوقود خارق يعطي عضلاتنا قوة وطاقة للركض، اللعب، والتفكير بذكاء في الروضة.",
+                challenge: "تناول تفاحة أو ثمرة مفيدة اليوم وشارك صديقك الابتسامة!",
+                questions: [
+                    {
+                        question: "أي من هذه الأطعمة يعطي أجسامنا قوة وصحة؟",
+                        choices: ["السكريات والحلويات المصنعة بكثرة", "المشروبات الغازية الملونة", "الفواكه والخضروات الطازجة", "الرقائق المقرمشة طوال اليوم"],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "ماذا تفعل الفواكه والخضروات لأجسامنا؟",
+                        choices: ["تعطينا طاقة وقوة للعب والذكاء", "تتعب أسناننا فقط", "تسبب لنا الكسل والنوم", "لا تفيد أجسامنا بشيء"],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "ماذا يجب أن نفعل قبل تناول الفواكه الطازجة؟",
+                        choices: ["نغسلها جيداً بالماء النظيف", "نأكلها فوراً دون غسل", "نرميها في سلة المهملات", "نتركها في الشمس طوال اليوم"],
+                        correctIndex: 0
+                    }
+                ]
+            },
+            {
+                id: 3,
+                title: "سر التعاطف ومساعدة الأصدقاء (ركن القلوب)",
+                emoji: "❤️",
+                description: "عندما نرى صديقاً حزيناً ونشاركه لعبتنم أو نبتسم في وجهه، فإننا نزرع زهرة محبة جميلة في قلبه ونصبح أبطالاً حقيقيين يساعدون الجميع.",
+                challenge: "قل كلمة جميلة لصديقك أو معلمتك اليوم!",
+                questions: [
+                    {
+                        question: "ماذا تفعل إذا رأيت صديقاً لك حزيناً في الروضة؟",
+                        choices: ["أسخر منه وأضحك عليه", "أتركه وأهرب بعيداً", "أبتسم في وجهه وأواسيه أو أساعده", "أقوم بدفعه"],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "مساعدة الأصدقاء في الروضة تدل على أننا:",
+                        choices: ["أبطال طيبون محبوبون", "مزعجون وغير مهذبين", "أطفال خوافون", "لا نحب أحد"],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "كيف نظهر المحبة لزملائنا؟",
+                        choices: ["بالمشاركة والكلمات الطيبة", "بالتشاجر وأخذ الألعاب", "بالصراخ الدائم", "بتجاهلهم تماماً"],
+                        correctIndex: 0
+                    }
+                ]
+            },
+            {
+                id: 4,
+                title: "سر آداب الكلام والتحية (لوحة الكلمات السحرية)",
+                emoji: "💬",
+                description: "كلمات مثل 'من فضلك' و'شكراً' و'صباح الخير' هي مفاتيح سحرية تفتح قلوب الآخرين وتجعل جميع الأشخاص يحبون التحدث معنا.",
+                challenge: "حيِ من تحبه اليوم بعبارة 'صباح الخير' المشرقة!",
+                questions: [
+                    {
+                        question: "ماذا نقول عندما نطلب شيئاً من المعلمة أو الوالدين؟",
+                        choices: ["أسرع واعطني هذا!", "من فضلك / لو سمحت", "لا أريد شيئاً", "اذهب من هنا"],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "ماذا نقول لمن يقدم لنا معروفاً أو مساعدة؟",
+                        choices: ["شكراً جزيلاً لك", "لا أريـد مساعدتك", "لماذا فعلت ذلك؟", "ابتعد عني"],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "عبارات التحية مثل 'صباح الخير' تعتبر:",
+                        choices: ["كلمات سحرية تفتح القلوب", "كلمات مزعجة", "أصوات غير مفيدة", "ممنوعة في الروضة"],
+                        correctIndex: 0
+                    }
+                ]
+            },
+            {
+                id: 5,
+                title: "سر الاستماع والإنصات (ركن الحكاية)",
+                emoji: "👂",
+                description: "عندما يتحدث المعلم أو الأصدقاء، نستمع بآذاننا الصاغية وعيوننا المتبسمة لأننا نتعلم أسراراً جديدة ومفيدة ونظهر احتراماً كبيراً لمن يتكلم.",
+                challenge: "استمع إلى قصة قصيرة اليوم وركز في كل تفاصيلها!",
+                questions: [
+                    {
+                        question: "لماذا نستمع بأذننا الصاغية عندما يتحدث شخص ما؟",
+                        choices: ["لكي نزعجه بصوتنا", "لكننا لا نهتم بما يقول", "لكي نتعلم ونظهر الاحترام", "لكي ننام أثناء الدرس"],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "عندما تتحدث المعلمة لشرح قصة جديدة، ماذا نفعل؟",
+                        choices: ["ننصت بهدوء ونركز معها", "نتحدث بصوت مرتفع مع الزملاء", "نلتفت للوراء ونلعب", "نغلق أعيننا وننام"],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "الإنصات الجيد يساعدنا على:",
+                        choices: ["فهم القصص والدروس بسهولة", "نسيان كل ما نقرأه", "إزعاج من حولنا", "فقدان التركيز"],
+                        correctIndex: 0
+                    }
+                ]
+            }
+        ];
+
+        let discoveredHotspots = [];
+        let currentSkillIndex = 0;
+        let currentQuestionIndex = 0;
+
+        // Step 1: Open Skill Info First
+        function openSkillInfo(index) {
+            playMagicalSound();
+            currentSkillIndex = index;
+            const skill = skillsData[index];
+            
+            document.getElementById('modalEmoji').innerText = skill.emoji;
+            document.getElementById('modalTitle').innerText = skill.title;
+            document.getElementById('modalDescription').innerText = skill.description;
+            document.getElementById('modalChallenge').innerText = skill.challenge;
+
+            document.getElementById('infoModal').classList.remove('hidden');
+
+            if (!discoveredHotspots.includes(index)) {
+                discoveredHotspots.push(index);
+                document.getElementById('discoveredCount').innerText = discoveredHotspots.length;
+            }
+        }
+
+        // Step 2: Transition from Info Modal to Quiz Modal
+        function startSkillQuiz() {
+            playMagicalSound();
+            document.getElementById('infoModal').classList.add('hidden');
+            currentQuestionIndex = 0;
+            loadQuestion();
+            document.getElementById('quizModal').classList.remove('hidden');
+        }
+
+        // Load Question for the current skill
+        function loadQuestion() {
+            const skill = skillsData[currentSkillIndex];
+            const q = skill.questions[currentQuestionIndex];
+
+            document.getElementById('quizEmoji').innerText = skill.emoji;
+            document.getElementById('quizSkillTitle').innerText = skill.title;
+            document.getElementById('questionCounter').innerText = `السؤال ${currentQuestionIndex + 1} من ${skill.questions.length}`;
+            document.getElementById('quizQuestionText').innerText = q.question;
+
+            const choicesContainer = document.getElementById('quizChoicesContainer');
+            choicesContainer.innerHTML = '';
+            
+            document.getElementById('quizFeedback').classList.add('hidden');
+            document.getElementById('nextQuestionBtn').classList.add('hidden');
+
+            q.choices.forEach((choice, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "p-3.5 bg-purple-50 hover:bg-purple-100 text-purple-950 border-2 border-purple-200 rounded-2xl font-bold text-sm sm:text-base text-right transition transform active:scale-95 shadow-sm";
+                btn.innerText = (idx + 1) + ". " + choice;
+                btn.onclick = () => checkQuizAnswer(idx, q.correctIndex, btn);
+                choicesContainer.appendChild(btn);
+            });
+        }
+
+        // Check quiz answer choice
+        function checkQuizAnswer(selectedIndex, correctIndex, selectedBtn) {
+            const skill = skillsData[currentSkillIndex];
+            const buttons = document.getElementById('quizChoicesContainer').getElementsByTagName('button');
+            const feedbackMsg = document.getElementById('quizFeedback');
+
+            for (let b of buttons) {
+                b.disabled = true;
+                b.classList.add('cursor-not-allowed');
+            }
+
+            if (selectedIndex === correctIndex) {
+                playCorrectSound();
+                selectedBtn.classList.remove('bg-purple-50', 'text-purple-950', 'border-purple-200');
+                selectedBtn.classList.add('bg-green-500', 'text-white', 'border-green-600');
+                feedbackMsg.innerText = "🎉 إجابة صحيحة يا بطل! أحسنت ⭐";
+                feedbackMsg.className = "text-lg font-black text-green-600 mb-3 animate-bounce";
+            } else {
+                playIncorrectSound();
+                selectedBtn.classList.remove('bg-purple-50', 'text-purple-950', 'border-purple-200');
+                selectedBtn.classList.add('bg-red-500', 'text-white', 'border-red-600');
+                
+                buttons[correctIndex].classList.remove('bg-purple-50', 'text-purple-950', 'border-purple-200');
+                buttons[correctIndex].classList.add('bg-green-500', 'text-white', 'border-green-600');
+                
+                feedbackMsg.innerText = "❌ محاولة جيدة، الإجابة الصحيحة مظللة بالأخضر";
+                feedbackMsg.className = "text-base font-black text-red-600 mb-3";
+            }
+
+            feedbackMsg.classList.remove('hidden');
+
+            const nextBtn = document.getElementById('nextQuestionBtn');
+            if (currentQuestionIndex < skill.questions.length - 1) {
+                nextBtn.innerText = "السؤال التالي ➔";
+            } else {
+                nextBtn.innerText = "✨ العودة إلى الغرفة الرئيسية";
+            }
+            nextBtn.classList.remove('hidden');
+        }
+
+        // Next Question or Return to Principal Scene
+        function nextQuestion() {
+            playMagicalSound();
+            const skill = skillsData[currentSkillIndex];
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < skill.questions.length) {
+                loadQuestion();
+            } else {
+                // Return to main scene after finishing all questions for this skill
+                document.getElementById('quizModal').classList.add('hidden');
+                
+                if (discoveredHotspots.length === skillsData.length) {
+                    setTimeout(() => {
+                        playMagicalSound();
+                        const studentName = document.getElementById('displayName').innerText || 'يا بطل';
+                        alert('🎉 مبروك يا بطل ' + studentName + '! لقد اكتشفت جميع أسرار الغرفة وأتممت كل أسئلة التحدي بنجاح!');
+                    }, 300);
+                }
+            }
+        }
+
+        function resetScene() {
+            discoveredHotspots = [];
+            document.getElementById('discoveredCount').innerText = '0';
+        }
+    </script>
+</body>
+</html>
